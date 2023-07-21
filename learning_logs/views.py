@@ -7,15 +7,15 @@ from .forms import TopicForm, EntryForm
 
 
 def index(request):
-    return render(request, 'learning_logs/index.html')
+    return render(request, "learning_logs/index.html")
 
 
 @login_required
 def topics(request):
-    topics = Topic.objects.filter(owner=request.user).order_by('date_added')
-    context = {'topics': topics}
+    topics = Topic.objects.filter(owner=request.user).order_by("date_added")
+    context = {"topics": topics}
 
-    return render(request, 'learning_logs/topics.html', context)
+    return render(request, "learning_logs/topics.html", context)
 
 
 @login_required
@@ -25,10 +25,10 @@ def topic(request, topic_id):
 
     # Get all entries for this particular topic and order
     # them by date added in descending order (newest first).
-    entries = topic.entry_set.order_by('-date_added')
-    context = {'topic': topic, 'entries': entries}
+    entries = topic.entry_set.order_by("-date_added")
+    context = {"topic": topic, "entries": entries}
 
-    return render(request, 'learning_logs/topic.html', context)
+    return render(request, "learning_logs/topic.html", context)
 
 
 @login_required
@@ -41,10 +41,10 @@ def new_topic(request):
             new_topic = form.save(commit=False)
             new_topic.owner = request.user
             new_topic.save()
-            return redirect('learning_logs:topics')
+            return redirect("learning_logs:topics")
 
-    context = {'form': form}
-    return render(request, 'learning_logs/new_topic.html', context)
+    context = {"form": form}
+    return render(request, "learning_logs/new_topic.html", context)
 
 
 @login_required
@@ -52,7 +52,7 @@ def new_entry(request, topic_id):
     topic = Topic.objects.get(id=topic_id)
     check_topic_owner(topic, request)
 
-    if request.method != 'POST':
+    if request.method != "POST":
         form = EntryForm()
     else:
         form = EntryForm(data=request.POST)
@@ -61,10 +61,10 @@ def new_entry(request, topic_id):
             new_entry = form.save(commit=False)
             new_entry.topic = topic
             new_entry.save()
-            return redirect('learning_logs:topic', topic_id=topic_id)
+            return redirect("learning_logs:topic", topic_id=topic_id)
 
-    context = {'topic': topic, 'form': form}
-    return render(request, 'learning_logs/new_entry.html', context)
+    context = {"topic": topic, "form": form}
+    return render(request, "learning_logs/new_entry.html", context)
 
 
 @login_required
@@ -74,16 +74,26 @@ def edit_entry(request, entry_id):
     topic = entry.topic
     check_topic_owner(topic, request)
 
-    if request.method != 'POST':
+    if request.method != "POST":
         form = EntryForm(instance=entry)
     else:
         form = EntryForm(instance=entry, data=request.POST)
         if form.is_valid():
             form.save()  # update the database record with changes from user input
-            return redirect('learning_logs:topic', topic_id=topic.id)
+            return redirect("learning_logs:topic", topic_id=topic.id)
 
-    context = {'entry': entry, 'topic': topic, 'form': form}
-    return render(request, 'learning_logs/edit_entry.html', context)
+    context = {"entry": entry, "topic": topic, "form": form}
+    return render(request, "learning_logs/edit_entry.html", context)
+
+
+def delete_entry(request, entry_id):
+    """Edit an existing learning log."""
+    entry = Entry.objects.get(id=entry_id)
+    topic = entry.topic
+    check_topic_owner(topic, request)
+
+    entry.delete()
+    return redirect("learning_logs:topic", topic_id=topic.id)
 
 
 def check_topic_owner(obj, request):
