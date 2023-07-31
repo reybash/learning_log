@@ -1,6 +1,6 @@
 to start
 
-cmd:
+cmd:      
 ll_env\Scripts\activate    
 python manage.py runserver
 
